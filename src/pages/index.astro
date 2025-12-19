@@ -1,0 +1,49 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import MapView from "../components/MapView";
+
+const title = "CelebGo - Where are the stars tonight?";
+const description = "Find celebrity events, concerts, and shows on an interactive map. Discover where the stars are tonight and in the coming days.";
+const canonical = Astro.site?.toString() || "https://celebgo.com";
+
+const maptilerKey = import.meta.env.PUBLIC_MAPTILER_KEY || "";
+---
+
+<BaseLayout title={title} description={description} canonical={canonical}>
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+      <div class="container mx-auto px-4 py-12 text-center">
+        <h1 class="text-4xl md:text-6xl font-bold mb-4">
+          Where are the stars tonight?
+        </h1>
+        <p class="text-lg md:text-xl text-white/90">
+          Discover celebrity events and concerts on the map
+        </p>
+      </div>
+    </div>
+
+    <!-- Map Container -->
+    <div class="w-full h-[calc(100vh-300px)] min-h-[500px]">
+      <MapView client:only="react" maptilerKey={maptilerKey} />
+    </div>
+
+    <!-- Optional: Legend -->
+    <div class="bg-white border-t">
+      <div class="container mx-auto px-4 py-4">
+        <div class="flex flex-wrap gap-4 justify-center text-sm">
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded-full bg-red-600 border-2 border-white"></div>
+            <span>Major Events</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded-full bg-purple-500 border-2 border-white"></div>
+            <span>Medium Events</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded-full bg-blue-500 border-2 border-white"></div>
+            <span>Local Events</span>
+          </div>
+        </div>
+      </div>
+    </div>
+</BaseLayout>

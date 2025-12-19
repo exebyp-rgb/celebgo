@@ -1,0 +1,47 @@
+---
+import type { Event } from "../types";
+import { formatDate, getRelativeDateString } from "../lib/date";
+
+interface Props {
+  event: Event;
+}
+
+const { event } = Astro.props;
+---
+
+<a
+  href={`/events/${event.slug}`}
+  class="block group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow"
+>
+  {event.imageUrl && (
+    <img
+      src={event.imageUrl}
+      alt={event.name}
+      loading="lazy"
+      class="w-full h-48 object-cover"
+    />
+  )}
+  
+  <div class="p-4">
+    <div class="flex items-baseline gap-2 mb-2">
+      <span class="text-sm font-semibold text-purple-600">
+        {getRelativeDateString(event.startDateTime)}
+      </span>
+      <span class="text-xs text-gray-500">{formatDate(event.startDateTime, "PPp")}</span>
+    </div>
+    
+    <h3 class="font-bold text-lg mb-1 group-hover:text-purple-600 transition">
+      {event.artistName}
+    </h3>
+    
+    <p class="text-sm text-gray-600 mb-2">
+      {event.venueName}, {event.cityName}
+    </p>
+    
+    {event.description && (
+      <p class="text-xs text-gray-500 line-clamp-2">
+        {event.description}
+      </p>
+    )}
+  </div>
+</a>

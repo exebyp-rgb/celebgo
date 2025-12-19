@@ -1,0 +1,148 @@
+---
+import { getAllEvents } from "../../lib/data";
+import { generateEventSchema } from "../../lib/schema";
+import { generateEventTitle, generateEventDescription, generateCanonicalUrl, generateOgImage } from "../../lib/seo";
+import { isEventToday, formatDate, formatDateTime } from "../../lib/date";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ShareButtons from "../../components/ShareButtons";
+
+export async function getStaticPaths() {
+  const events = await getAllEvents();
+  
+  return events.map((event) => ({
+    params: { slug: event.slug },
+    props: { event },
+  }));
+}
+
+const { event } = Astro.props;
+const isToday = isEventToday(event.startDateTime);
+
+const title = generateEventTitle(
+  event.artistName,
+  event.cityName,
+  formatDate(event.startDateTime, "MMM d"),
+  isToday
+);
+const description = generateEventDescription(
+  event.artistName,
+  event.cityName,
+  event.venueName,
+  formatDate(event.startDateTime, "PP")
+);
+const canonical = generateCanonicalUrl(`/events/${event.slug}`);
+const ogImage = generateOgImage(event.imageUrl);
+const schemaMarkup = generateEventSchema(event);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  ogImage={ogImage}
+  schemaMarkup={schemaMarkup}
+>
+      <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+          <!-- Back Button -->
+          <a
+            href="/"
+            class="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 mb-4"
+          >
+            ← Back to Map
+          </a>
+
+          <!-- Event Card -->
+          <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            {event.imageUrl && (
+              <img
+                src={event.imageUrl}
+                alt={event.name}
+                class="w-full h-64 md:h-96 object-cover"
+              />
+            )}
+
+            <div class="p-6">
+              <!-- Title -->
+              <h1 class="text-3xl md:text-4xl font-bold mb-4">
+                {event.artistName} in {event.cityName}
+                {isToday && <span class="text-purple-600"> Tonight</span>}
+              </h1>
+
+              <!-- Event Info Grid -->
+              <div class="grid md:grid-2 gap-4 mb-6">
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-500 mb-1">📅 Date & Time</h3>
+                  <p class="text-lg">{formatDateTime(event.startDateTime)}</p>
+                </div>
+
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-500 mb-1">📍 Venue</h3>
+                  <p class="text-lg">{event.venueName}</p>
+                  {event.venueAddress && (
+                    <p class="text-sm text-gray-600">{event.venueAddress}</p>
+                  )}
+                </div>
+
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-500 mb-1">🌍 Location</h3>
+                  <p class="text-lg">{event.cityName}, {event.countryCode}</p>
+                </div>
+
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-500 mb-1">🎭 Category</h3>
+                  <p class="text-lg capitalize">{event.category}</p>
+                </div>
+              </div>
+
+              <!-- Description -->
+              {event.description && (
+                <div class="mb-6">
+                  <h3 class="text-sm font-semibold text-gray-500 mb-2">About</h3>
+                  <p class="text-gray-700 leading-relaxed">{event.description}</p>
+                </div>
+              )}
+
+              <!-- Links -->
+              <div class="flex flex-wrap gap-4 mb-6">
+                <a
+                  href={`/city/${event.citySlug}`}
+                  class="text-purple-600 hover:text-purple-700 font-medium"
+                >
+                  More events in {event.cityName} →
+                </a>
+                <a
+                  href={`/artist/${event.artistSlug}`}
+                  class="text-purple-600 hover:text-purple-700 font-medium"
+                >
+                  More {event.artistName} events →
+                </a>
+              </div>
+
+              <!-- Ticket Link -->
+              {event.ticketUrl && (
+                <a
+                  href={event.ticketUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition font-medium mb-6"
+                >
+                  Get Tickets
+                </a>
+              )}
+
+              <!-- Share Component -->
+              <div class="border-t pt-6">
+                <p class="text-sm font-semibold mb-3">R U in?</p>
+                <ShareButtons
+                  client:load
+                  eventUrl={`https://celebgo.com/events/${event.slug}`}
+                  eventName={`${event.artistName} in ${event.cityName}`}
+                  onClose={() => {}}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+</BaseLayout>

@@ -1,0 +1,8 @@
+name = "celebgo"
+compatibility_date = "2025-12-19"
+pages_build_output_dir = "dist"
+
+[env.production]
+# Environment variables for production will be set in Cloudflare dashboard
+# PUBLIC_MAPTILER_KEY = ""
+# PUBLIC_TICKETMASTER_KEY = ""

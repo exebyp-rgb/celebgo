@@ -1,0 +1,73 @@
+---
+import { getAllArtists, getAllEvents } from "../../lib/data";
+import { generateTitle, generateCanonicalUrl } from "../../lib/seo";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import EventCard from "../../components/EventCard.astro";
+
+export async function getStaticPaths() {
+  const artists = await getAllArtists();
+  
+  return artists.map((artist) => ({
+    params: { artistSlug: artist.slug },
+    props: { artist },
+  }));
+}
+
+const { artist } = Astro.props;
+const allEvents = await getAllEvents();
+const artistEvents = allEvents.filter(e => e.artistSlug === artist.slug);
+
+const title = generateTitle(`${artist.name} - upcoming events on the map`);
+const description = `Find where ${artist.name} is performing next. See all upcoming concerts and events on the interactive map.`;
+const canonical = generateCanonicalUrl(`/artist/${artist.slug}`);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  ogImage={artist.imageUrl}
+>
+      <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+        <div class="container mx-auto px-4 py-12">
+          <a href="/" class="inline-flex items-center gap-2 text-white/80 hover:text-white mb-4">
+            ← Back to Map
+          </a>
+          
+          <div class="flex items-start gap-6">
+            {artist.imageUrl && (
+              <img
+                src={artist.imageUrl}
+                alt={artist.name}
+                class="w-24 h-24 rounded-full object-cover border-4 border-white/20"
+              />
+            )}
+            
+            <div>
+              <h1 class="text-4xl md:text-5xl font-bold mb-2">
+                {artist.name}
+              </h1>
+              <p class="text-white/90 text-lg">
+                {artist.eventsCount} upcoming {artist.eventsCount === 1 ? "event" : "events"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container mx-auto px-4 py-8">
+        <h2 class="text-2xl font-bold mb-6">Where is {artist.name} performing next?</h2>
+        
+        {artistEvents.length > 0 ? (
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {artistEvents.map((event) => (
+              <EventCard event={event} />
+            ))}
+          </div>
+        ) : (
+          <div class="text-center py-12">
+            <p class="text-gray-500 text-lg">No upcoming events for {artist.name}</p>
+          </div>
+        )}
+      </div>
+</BaseLayout>

@@ -1,0 +1,57 @@
+---
+import { getAllCities, getAllEvents } from "../../lib/data";
+import { generateTitle, generateCanonicalUrl } from "../../lib/seo";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import EventCard from "../../components/EventCard.astro";
+
+export async function getStaticPaths() {
+  const cities = await getAllCities();
+  
+  return cities.map((city) => ({
+    params: { citySlug: city.slug },
+    props: { city },
+  }));
+}
+
+const { city } = Astro.props;
+const allEvents = await getAllEvents();
+const cityEvents = allEvents.filter(e => e.citySlug === city.slug);
+
+const title = generateTitle(`Concerts and events in ${city.name}`);
+const description = `Discover upcoming celebrity events, concerts, and shows in ${city.name}, ${city.countryCode}. Find what's happening tonight and in the coming days.`;
+const canonical = generateCanonicalUrl(`/city/${city.slug}`);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+>
+      <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+        <div class="container mx-auto px-4 py-12">
+          <a href="/" class="inline-flex items-center gap-2 text-white/80 hover:text-white mb-4">
+            ← Back to Map
+          </a>
+          <h1 class="text-4xl md:text-5xl font-bold mb-2">
+            What's happening in {city.name}
+          </h1>
+          <p class="text-white/90 text-lg">
+            {city.eventsCount} upcoming {city.eventsCount === 1 ? "event" : "events"}
+          </p>
+        </div>
+      </div>
+
+      <div class="container mx-auto px-4 py-8">
+        {cityEvents.length > 0 ? (
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {cityEvents.map((event) => (
+              <EventCard event={event} />
+            ))}
+          </div>
+        ) : (
+          <div class="text-center py-12">
+            <p class="text-gray-500 text-lg">No upcoming events in {city.name}</p>
+          </div>
+        )}
+      </div>
+</BaseLayout>

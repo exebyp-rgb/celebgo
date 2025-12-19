@@ -1,0 +1,65 @@
+---
+import { getAllEvents } from "../lib/data";
+import { isEventThisWeek } from "../lib/date";
+import { generateTitle, generateCanonicalUrl } from "../lib/seo";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import SeoHead from "../components/SeoHead.astro";
+import EventCard from "../components/EventCard.astro";
+import "../styles/global.css";
+
+const allEvents = await getAllEvents();
+const thisWeekEvents = allEvents.filter(event => isEventThisWeek(event.startDateTime));
+
+const title = generateTitle("Events this week");
+const description = "Find celebrity events, concerts, and shows happening this week. See where the stars are on the map.";
+const canonical = generateCanonicalUrl("/this-week");
+---
+
+<html lang="en">
+  <head>
+    <SeoHead
+      title={title}
+      description={description}
+      canonical={canonical}
+    />
+  </head>
+  <body class="bg-gray-50">
+    <Header />
+
+    <main class="pt-16">
+      <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+        <div class="container mx-auto px-4 py-12">
+          <a href="/" class="inline-flex items-center gap-2 text-white/80 hover:text-white mb-4">
+            ← Back to Map
+          </a>
+          <h1 class="text-4xl md:text-5xl font-bold mb-2">
+            Events This Week
+          </h1>
+          <p class="text-white/90 text-lg">
+            {thisWeekEvents.length} {thisWeekEvents.length === 1 ? "event" : "events"} happening this week
+          </p>
+        </div>
+      </div>
+
+      <div class="container mx-auto px-4 py-8">
+        {thisWeekEvents.length > 0 ? (
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {thisWeekEvents.map((event) => (
+              <EventCard event={event} />
+            ))}
+          </div>
+        ) : (
+          <div class="text-center py-12">
+            <p class="text-gray-500 text-lg">No events happening this week</p>
+            <a href="/" class="text-purple-600 hover:text-purple-700 mt-4 inline-block">
+              View all upcoming events →
+            </a>
+          </div>
+        )}
+      </div>
+    </main>
+
+    <Footer />
+  </body>
+</html>
