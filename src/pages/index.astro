@@ -6,7 +6,7 @@ const title = "CelebGo - Where are the stars tonight?";
 const description = "Find celebrity events, concerts, and shows on an interactive map. Discover where the stars are tonight and in the coming days.";
 const canonical = Astro.site?.toString() || "https://celebgo.com";
 
-const maptilerKey = import.meta.env.PUBLIC_MAPTILER_KEY || "";
+
 ---
 
 <BaseLayout title={title} description={description} canonical={canonical}>
@@ -24,7 +24,7 @@ const maptilerKey = import.meta.env.PUBLIC_MAPTILER_KEY || "";
 
     <!-- Map Container -->
     <div class="w-full h-[calc(100vh-300px)] min-h-[500px]">
-      <MapView client:only="react" maptilerKey={maptilerKey} />
+      <MapView client:only="react" />
     </div>
 
     <!-- Optional: Legend -->

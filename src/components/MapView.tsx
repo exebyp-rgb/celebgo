@@ -3,17 +3,23 @@ import type maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import EventPopup from "./EventPopup";
 
-interface MapViewProps {
-    maptilerKey: string;
-}
 
-export default function MapView({ maptilerKey }: MapViewProps) {
+
+export default function MapView() {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
     const [selectedEvent, setSelectedEvent] = useState<any>(null);
     const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null);
 
+    // Use the PUBLIC_ key directly as requested
+    const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY;
+
     useEffect(() => {
+        if (!MAPTILER_KEY) {
+            console.error("[CelebGo] PUBLIC_MAPTILER_KEY is missing. Map will not be initialized.");
+            return;
+        }
+
         if (!mapContainer.current) return;
 
         const initMap = async () => {
@@ -21,7 +27,7 @@ export default function MapView({ maptilerKey }: MapViewProps) {
 
             map.current = new maplibregl.Map({
                 container: mapContainer.current!,
-                style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${maptilerKey}`,
+                style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`,
                 center: [-98, 39], // Center of US
                 zoom: 3,
             });
@@ -153,12 +159,20 @@ export default function MapView({ maptilerKey }: MapViewProps) {
         return () => {
             map.current?.remove();
         };
-    }, [maptilerKey]);
+    }, [MAPTILER_KEY]);
 
     const closePopup = () => {
         setSelectedEvent(null);
         setPopupPosition(null);
     };
+
+    if (!MAPTILER_KEY) {
+        return (
+            <div className="flex items-center justify-center min-h-[50vh] bg-gray-100 text-gray-600 text-center px-4">
+                <p>Map is temporarily unavailable. Please try again later.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="relative w-full h-full">
