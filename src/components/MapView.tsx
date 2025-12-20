@@ -34,9 +34,8 @@ export default function MapView() {
 
             map.current.on("load", async () => {
                 // Fetch GeoJSON data
-                const response = await fetch("/data/events.geojson");
-                const geojson = await response.json();
-
+      // Empty GeoJSON - events will be loaded from API
+      const geojson = { type: "FeatureCollection", features: [] };
                 // Add source
                 map.current!.addSource("events", {
                     type: "geojson",
