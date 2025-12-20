@@ -1,7 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import MapView from "../components/MapView";
-
+import EventsExplorer from "../components/EventsExplorer";
 const title = "CelebGo - Where are the stars tonight?";
 const description = "Find celebrity events, concerts, and shows on an interactive map. Discover where the stars are tonight and in the coming days.";
 const canonical = Astro.site?.toString() || "https://celebgo.com";
@@ -24,8 +23,7 @@ const canonical = Astro.site?.toString() || "https://celebgo.com";
 
     <!-- Map Container -->
     <div class="w-full h-[calc(100vh-300px)] min-h-[500px]">
-      <MapView client:only="react" />
-    </div>
+      <EventsExplorer client:only="react" />    </div>
 
     <!-- Optional: Legend -->
     <div class="bg-white border-t">
