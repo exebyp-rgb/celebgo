@@ -14,9 +14,11 @@ export type SimpleEvent = {
 
 type MapViewProps = {
   events: SimpleEvent[];
+  loading?: boolean;
+  onUseMyLocation?: () => void;
 };
 
-export default function MapView({ events }: MapViewProps) {
+export default function MapView({ events, loading, onUseMyLocation }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
@@ -30,6 +32,7 @@ export default function MapView({ events }: MapViewProps) {
       console.error("[CelebGo] PUBLIC_MAPTILER_KEY is missing. Map will not be initialized.");
       return;
     }
+
     if (!mapContainer.current) return;
 
     const initMap = async () => {
@@ -37,7 +40,8 @@ export default function MapView({ events }: MapViewProps) {
 
       map.current = new maplibreglModule.Map({
         container: mapContainer.current!,
-        style: `https://api.maptiler.com/maps/bright/style.json?key=${MAPTILER_KEY}`,        center: [-98, 39],
+        style: `https://api.maptiler.com/maps/bright/style.json?key=${MAPTILER_KEY}`,
+        center: [-98, 39],
         zoom: 3,
       });
 
@@ -109,9 +113,10 @@ export default function MapView({ events }: MapViewProps) {
               "#3b82f6",
               "#a855f7",
             ],
-          "circle-radius": 12,            "circle-stroke-width": 4,
+            "circle-radius": 12,
+            "circle-stroke-width": 4,
             "circle-stroke-color": "#fff",
-                      "circle-opacity": 0.85,
+            "circle-opacity": 0.85,
           },
         });
 
@@ -120,6 +125,7 @@ export default function MapView({ events }: MapViewProps) {
           const features = map.current!.queryRenderedFeatures(e.point, { layers: ["clusters"] });
           if (!features.length) return;
           const clusterId = features[0].properties!.cluster_id;
+
           (map.current!.getSource("events") as any).getClusterExpansionZoom(
             clusterId,
             (err: any, zoom: number) => {
@@ -207,6 +213,15 @@ export default function MapView({ events }: MapViewProps) {
       <div ref={mapContainer} className="w-full h-full" />
       {selectedEvent && popupPosition && (
         <EventPopup event={selectedEvent} position={popupPosition} onClose={closePopup} />
+      )}
+      {onUseMyLocation && (
+        <button
+          onClick={onUseMyLocation}
+          disabled={loading}
+          className="absolute top-4 right-4 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all duration-200 ease-in-out z-10"
+        >
+          {loading ? "Loading..." : "📍 Use my location"}
+        </button>
       )}
     </div>
   );
