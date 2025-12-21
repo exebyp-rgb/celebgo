@@ -37,8 +37,7 @@ export default function MapView({ events }: MapViewProps) {
 
       map.current = new maplibreglModule.Map({
         container: mapContainer.current!,
-        style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`,
-        center: [-98, 39],
+        style: `https://api.maptiler.com/maps/bright/style.json?key=${MAPTILER_KEY}`,        center: [-98, 39],
         zoom: 3,
       });
 
@@ -110,9 +109,9 @@ export default function MapView({ events }: MapViewProps) {
               "#3b82f6",
               "#a855f7",
             ],
-            "circle-radius": 8,
-            "circle-stroke-width": 2,
+          "circle-radius": 12,            "circle-stroke-width": 4,
             "circle-stroke-color": "#fff",
+                      "circle-opacity": 0.85,
           },
         });
 
