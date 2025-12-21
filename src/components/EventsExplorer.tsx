@@ -5,8 +5,6 @@ export default function EventsExplorer() {
   const [events, setEvents] = useState<SimpleEvent[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const TICKETMASTER_KEY = import.meta.env.PUBLIC_TICKETMASTER_KEY;
-
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) {
       alert("Geolocation is not supported by your browser");
@@ -18,70 +16,78 @@ export default function EventsExplorer() {
       async (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
-        
+
         // Log A: geo coordinates
         console.log("[CelebGo] geo:", lat, lng);
 
         try {
-          // Fetch events from Ticketmaster (no date filter - get ANY events)
+          // Fetch events from our API proxy (no date filter - get ANY events)
           const radius = 50; // miles
           const size = 50;
-          const url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${TICKETMASTER_KEY}&latlong=${lat},${lng}&radius=${radius}&size=${size}&unit=miles`;
-          
+          const url = `/api/events?lat=${lat}&lon=${lng}&radius=${radius}&unit=miles`;
+
           const response = await fetch(url);
           const data = await response.json();
-          
+
           // Log B: fetched events count
-          const fetchedEvents = data._embedded?.events || [];
-          console.log("[CelebGo] fetched events:", fetchedEvents.length);
+          console.log(
+            "[CelebGo] fetched events from API:",
+            data?._embedded?.events?.length ?? 0
+          );
 
-          // Convert to SimpleEvent format
-          const normalized: SimpleEvent[] = fetchedEvents
-            .filter((e: any) => e._embedded?.venues?.[0]?.location)
-            .map((e: any) => {
-              const venue = e._embedded.venues[0];
-              return {
-                id: e.id,
-                title: e.name,
-                importance: "local" as const,
-                lat: parseFloat(venue.location.latitude),
-                lng: parseFloat(venue.location.longitude),
-              };
-            });
+          if (
+            data &&
+            data._embedded &&
+            data._embedded.events &&
+            data._embedded.events.length > 0
+          ) {
+            const rawEvents = data._embedded.events;
+            const mapped: SimpleEvent[] = rawEvents.map((e: any) => ({
+              id: e.id,
+              name: e.name || "Untitled Event",
+              url: e.url || "",
+              lat:
+                e._embedded?.venues?.[0]?.location?.latitude
+                  ? parseFloat(e._embedded.venues[0].location.latitude)
+                  : 0,
+              lng:
+                e._embedded?.venues?.[0]?.location?.longitude
+                  ? parseFloat(e._embedded.venues[0].location.longitude)
+                  : 0,
+              venue: e._embedded?.venues?.[0]?.name || "Unknown Venue",
+              date: e.dates?.start?.localDate || "",
+              imageUrl:
+                e.images && e.images.length > 0 ? e.images[0].url : "",
+            }));
 
-          setEvents(normalized);
-          
-          // Log C: passing to MapView
-          console.log("[CelebGo] passing to MapView events:", normalized.length);
-        } catch (error) {
-          console.error("[CelebGo] Error fetching events:", error);
-          alert("Failed to fetch events. Please try again.");
+            // Log C: total mapped events count
+            console.log("[CelebGo] mapped events:", mapped.length);
+
+            setEvents(mapped);
+          } else {
+            console.log("[CelebGo] No events found in the response.");
+            setEvents([]);
+          }
+        } catch (err) {
+          console.error("[CelebGo] Error fetching events:", err);
+          alert("Failed to fetch events. Check console for details.");
         } finally {
           setLoading(false);
         }
       },
       (error) => {
         console.error("[CelebGo] Geolocation error:", error);
-        alert("Failed to get your location. Please enable location access.");
         setLoading(false);
+        alert("Unable to retrieve your location.");
       }
     );
   };
 
   return (
-    <div className="relative w-full h-full">
-      <MapView events={events} />
-      
-      {/* Use My Location Button */}
-      <div className="absolute top-4 right-4 z-10">
-        <button
-          onClick={handleUseMyLocation}
-          disabled={loading}
-          className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors"
-        >
-          {loading ? "Loading..." : "Use my location"}
-        </button>
-      </div>
-    </div>
+    <MapView
+      events={events}
+      loading={loading}
+      onUseMyLocation={handleUseMyLocation}
+    />
   );
 }
